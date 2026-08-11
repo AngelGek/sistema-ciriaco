@@ -605,14 +605,19 @@ function imprimirConstanciaPDF(c) {
   doc.rect(0, 26, 148, 2, "F");
 
   // --- INSERCIÓN DEL LOGOTIPO EN BASE64 ---
-  const logoBase64 = "data:image/jpeg;base64,/9j/4AAQSkZ... (¡AQUÍ VA TODA TU CADENA LARGA DE BASE64!) ..."; 
+  // Pega tu código larguísimo aquí adentro. 
+  let codigoLargo = "/9j/4AAQSkZJRgABAQAAAQABAAD/7QCc... (¡PEGA AQUÍ TODO EL RESTO DE TU CÓDIGO!) ...";
+  
+  // Esto limpiará automáticamente cualquier salto de línea o espacio accidental generado por tu editor
+  const logoBase64 = "data:image/jpeg;base64," + codigoLargo.replace(/[\r\n\s]+/g, ""); 
   
   try {
-    // Inserta la imagen a la izquierda de la cabecera (Coordenadas X: 4, Y: 3, Ancho: 26, Alto: 20)
+    // Inserta la imagen limpia a la izquierda de la cabecera
     doc.addImage(logoBase64, 'JPEG', 4, 3, 26, 20);
   } catch (e) {
-    console.warn("No se pudo cargar el logo, continuando sin él...", e);
+    console.warn("No se pudo cargar el logo. Revisa el Base64.", e);
   }
+  
 
   // --- TEXTOS DE LA CABECERA ---
   doc.setTextColor(255, 255, 255);
