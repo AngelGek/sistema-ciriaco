@@ -473,13 +473,24 @@ function renderShell() {
     el('div', { class: 'nav', id: 'nav' }),
   ]);
 
-  const main = el('div', { class: 'main' }, [
+  var main = el('div', { class: 'main' }, [
     el('div', { class: 'topbar' }, [
-      el('button', { class: 'btn btn-outline', id: 'mobile-nav-btn', onclick: () => document.getElementById('sidebar').classList.toggle('open')}, '☰'),
-      el('div', { style: 'flex:1; min-width:0;' }, [ el('h1', { id: 'view-title' }, ''), el('div', { class: 'desc', id: 'view-desc' }, '') ]),
-      el('div', { class: 'status-pill', id: 'save-status-pill' }),
+      el('h1', { id: 'view-title' }, ''),
+      el('div', { style: 'display:flex; align-items:center; gap:10px;' }, [
+        el('button', { 
+          class: 'btn btn-outline btn-sm', 
+          style: 'border-color: #C0392B; color: #C0392B; background: #fff;', 
+          onclick: function() {
+            if (confirm('¿Estás seguro de que deseas salir del sistema?')) {
+              window.close();
+              window.location.href = "about:blank";
+            }
+          } 
+        }, '🚪 Salir'),
+        el('span', { class: 'status-pill status-online', id: 'save-status-pill' }, '● Sincronizado')
+      ])
     ]),
-    el('div', { class: 'content', id: 'content' }),
+    el('div', { class: 'content', id: 'content' })
   ]);
 
   app.appendChild(sidebar); app.appendChild(main); document.body.appendChild(app);
