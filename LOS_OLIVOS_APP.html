@@ -478,20 +478,11 @@ function renderShell() {
       el('h1', { id: 'view-title' }, ''),
       el('div', { style: 'display:flex; align-items:center; gap:10px;' }, [
         el('button', { 
-          class: 'btn btn-outline btn-sm', 
-          style: 'border-color: #C0392B; color: #C0392B; background: #fff;', 
-          onclick: function() {
-            openModal([
-              el('h3', {}, '🚪 Cierre de Sesión'),
-              el('p', { style: 'font-size: 13px; color: var(--muted); margin: 10px 0 20px;' }, '¿Estás seguro de que deseas salir del sistema?'),
-              el('div', { class: 'modal-actions' }, [
-                el('button', { class: 'btn btn-outline', onclick: closeModal }, 'Cancelar'),
-                el('button', { 
                   class: 'btn btn-primary', 
                   style: 'background: #C0392B; border-color: #C0392B;',
                   onclick: function() {
-                    window.close();
-                    window.location.href = "about:blank";
+                    // Cierra la ventana de forma directa
+                    window.open('', '_self').close();
                   } 
                 }, 'Sí, Salir')
               ])
