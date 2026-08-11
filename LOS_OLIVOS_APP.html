@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LOS OLIVOS — Sistema de Guias y Constancias</title><style>:root{
+<title>LOS OLIVOS — Sistema de Constancias</title><style>:root{
   --navy:#C31F2B;
   --navy-2:#4C7A2F;
   --navy-3:#7A141C;
@@ -604,11 +604,11 @@ function imprimirConstanciaPDF(c) {
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text('TRANSPORTES CIRIACO — "LOS OLIVOS"', 74, 10, { align: "center" });
+  doc.text('TRANSPORTES CIRIACO EXPRESS S.A — TRANCIESA', 74, 10, { align: "center" });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text('Sistema de Guías y Constancias de Pago', 74, 16, { align: "center" });
+  doc.text('SUCURSAL: Jr. Helios 588 Los Olivos' 'TELEFONO: 933662255', 74, 16, { align: "center" });
 
   // --- NÚMERO DE CONSTANCIA ---
   doc.setFillColor(255, 212, 0); 
