@@ -588,6 +588,7 @@ function renderClientes(root) {
 window.addEventListener('DOMContentLoaded', initApp);
 
 // Función para construir y generar el PDF estricto en A5 con diseño profesional
+// Función para construir y generar el PDF estricto en A5 con diseño profesional y descarga directa
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
@@ -595,15 +596,12 @@ function imprimirConstanciaPDF(c) {
   const cli = findCliente(c.codigo);
 
   // --- CABECERA INSTITUCIONAL ---
-  // Franja superior de color rojo marca (#C31F2B)
   doc.setFillColor(195, 31, 43);
   doc.rect(0, 0, 148, 24, "F");
 
-  // Franja delgada decorativa verde cinta (#4C7A2F) debajo de la principal
   doc.setFillColor(76, 122, 47);
   doc.rect(0, 24, 148, 2, "F");
 
-  // Título principal dentro de la cabecera
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -613,8 +611,8 @@ function imprimirConstanciaPDF(c) {
   doc.setFont("helvetica", "normal");
   doc.text('Sistema de Guías y Constancias de Pago', 74, 16, { align: "center" });
 
-  // --- NÚMERO DE CONSTANCIA (Caja destacada a la derecha) ---
-  doc.setFillColor(255, 212, 0); // Fondo amarillo (#FFD400)
+  // --- NÚMERO DE CONSTANCIA ---
+  doc.setFillColor(255, 212, 0); 
   doc.roundedRect(102, 30, 36, 12, 1, 1, "F");
   doc.setTextColor(34, 27, 23);
   doc.setFont("helvetica", "bold");
@@ -637,7 +635,6 @@ function imprimirConstanciaPDF(c) {
   doc.text(`Teléfono: ${cli ? (cli.telefono || '-') : '-'}`, 14, 55);
   doc.text(`Dirección: ${cli ? (cli.direccion || '-') : '-'}`, 14, 60);
 
-  // Línea divisoria sutil
   doc.setDrawColor(230, 225, 214);
   doc.setLineWidth(0.5);
   doc.line(14, 64, 134, 64);
@@ -655,7 +652,7 @@ function imprimirConstanciaPDF(c) {
     body: bodyData,
     theme: 'grid',
     headStyles: { 
-      fillColor: [76, 122, 47], // Verde cinta institucional para la tabla
+      fillColor: [76, 122, 47], 
       textColor: [255, 255, 255],
       fontStyle: 'bold',
       halign: 'left'
@@ -672,7 +669,7 @@ function imprimirConstanciaPDF(c) {
       2: { halign: 'right', cellWidth: 28 } 
     },
     alternateRowStyles: {
-      fillColor: [243, 241, 236] // Color de fondo alternado suave (--bg)
+      fillColor: [243, 241, 236] 
     }
   });
 
@@ -687,7 +684,7 @@ function imprimirConstanciaPDF(c) {
   doc.setTextColor(195, 31, 43);
   doc.text(`TOTAL: ${fmtMoney(total)}`, 130, finalY + 10, { align: "right" });
 
-  // --- OBSERVACIONES (Si existen) ---
+  // --- OBSERVACIONES ---
   let nextY = finalY + 18;
   if (c.obs) {
     doc.setFontSize(8);
@@ -711,7 +708,7 @@ function imprimirConstanciaPDF(c) {
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
   doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
-  // Abre el PDF estilizado directamente en el visor
-  window.open(doc.output('bloburl'), '_blank');
+  // Descarga el archivo de forma automática sin abrir pestañas externas
+  doc.save(`Constancia_${String(c.numero).padStart(4, '0')}.pdf`);
 }
 </script></body></html>
