@@ -385,7 +385,18 @@ function setSaveStatus(status) {
   pill.className = 'status-pill ' + cfg.cls;
   pill.innerHTML = `<span class="status-dot"></span><span>${cfg.txt}</span>`;
 }
+function cerrarSistema() {
+  if (confirm('¿Estás seguro de que deseas salir del sistema?')) {
+    // Intenta cerrar la ventana controlada por script
+    window.close();
+    
+    // Como respaldo en modo kiosco estricto donde el navegador bloquea el cierre directo,
+    // redirigimos a una página en blanco para limpiar la sesión visualmente antes de forzar la salida
+    window.location.href = "about:blank";
+  }
+}
 
+  
 function el(tag, attrs = {}, children = []) {
   const e = document.createElement(tag);
   for (const k in attrs) {
