@@ -587,8 +587,7 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
-// Función para construir y generar el PDF estricto en A5 con diseño profesional
-// Función para construir y generar el PDF estricto en A5 con diseño profesional y descarga directa
+// Función unificada para descargar el PDF estilizado en A5 desde cualquier sección (emisión o historial)
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
@@ -708,7 +707,8 @@ function imprimirConstanciaPDF(c) {
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
   doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
-  // Descarga el archivo de forma automática sin abrir pestañas externas
+  // Descarga directa sin abrir pestañas externas
   doc.save(`Constancia_${String(c.numero).padStart(4, '0')}.pdf`);
+  showToast('Constancia descargada con éxito');
 }
 </script></body></html>
