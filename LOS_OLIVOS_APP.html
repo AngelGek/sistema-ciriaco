@@ -587,7 +587,7 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
-// Función unificada para descargar el PDF estilizado en A5 desde cualquier sección (emisión o historial)
+// Función para mostrar la constancia estilizada en un visor flotante dentro de la app (Listo para imprimir o cerrar)
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
@@ -707,8 +707,30 @@ function imprimirConstanciaPDF(c) {
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
   doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
-  // Descarga directa sin abrir pestañas externas
-  doc.save(`Constancia_${String(c.numero).padStart(4, '0')}.pdf`);
-  showToast('Constancia descargada con éxito');
+  // --- GENERAR VISOR FLOTANTE EN MODAL ---
+  const pdfBlobUrl = doc.output('bloburl');
+
+  // Creamos elementos internos para el visor modal dentro de la pantalla completa
+  const iframe = el('iframe', { src: pdfBlobUrl, style: 'width:100%; height:450px; border:1px solid var(--line); border-radius:8px;' });
+  
+  const btnImprimir = el('button', { 
+    class: 'btn btn-primary', 
+    onclick: () => {
+      // Abre el diálogo de impresión directamente desde el iframe del documento
+      iframe.contentWindow.print();
+    } 
+  }, '🖨️ Imprimir Constancia');
+
+  const btnCerrar = el('button', { 
+    class: 'btn btn-outline', 
+    onclick: closeModal 
+  }, 'Cerrar');
+
+  openModal([
+    el('h3', {}, `Constancia N° ${String(c.numero).padStart(4, '0')}`),
+    el('p', { class: 'modal-sub' }, 'Vista previa del documento listo para imprimir:'),
+    iframe,
+    el('div', { class: 'modal-actions', style: 'margin-top:14px;' }, [btnCerrar, btnImprimir])
+  ]);
 }
 </script></body></html>
