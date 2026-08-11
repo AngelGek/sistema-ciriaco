@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOS OLIVOS — Sistema de Guias y Constancias</title><style>:root{
+  /* Paleta inspirada en el formato original: rojo diagonal, cinta verde, cajas amarillas, campos azules */
+  --navy:#C31F2B;         /* rojo marca (antes navy) */
+  --navy-2:#4C7A2F;       /* verde cinta (antes navy-2, ahora usado en barras de sección) */
+  --navy-3:#7A141C;       /* rojo oscuro (antes navy-3, cabecera/sidebar) */
+  --gold:#FFD400;         /* amarillo resaltado (antes gold) */
+  --gold-light:#FFF6BF;   /* amarillo claro (fondo botones "agregar") */
+  --field-blue:#3B5BA0;   /* azul de campos, como en la guia fisica */
+  --bg:#F3F1EC;
+  --card:#FFFFFF;
+  --ink:#221B17;
+  --muted:#6B675F;
+  --line:#E6E1D6;
+  --success:#1E7B4D;
+  --danger:#C0392B;
+  --warn-bg:#FFF6D8;
+  --radius:10px;
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+}
+#app{display:flex; min-height:100vh;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:220px;
+  background:linear-gradient(180deg,var(--navy-3),var(--navy));
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  flex-shrink:0;
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+}
+.brand{
+  padding:20px 18px 14px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.brand .name{font-weight:800; font-size:15px; letter-spacing:.3px; line-height:1.25;}
+.brand .sub{font-size:11px; color:var(--gold); font-weight:700; margin-top:4px; letter-spacing:.4px;}
+.nav{padding:10px 8px; flex:1;}
+.nav-item{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:8px; cursor:pointer;
+  font-size:13.5px; font-weight:600; color:rgba(255,255,255,.82);
+  margin-bottom:2px; user-select:none;
+  transition:background .12s ease, color .12s ease;
+}
+.nav-item:hover{background:rgba(255,255,255,.08); color:#fff;}
+.nav-item.active{background:var(--gold); color:var(--navy-3);}
+.nav-icon{width:18px; text-align:center; font-size:14px;}
+.nav-sep{height:1px; background:rgba(255,255,255,.12); margin:10px 12px;}
+.nav-label{
+  font-size:10px; text-transform:uppercase; letter-spacing:.6px;
+  color:rgba(255,255,255,.45); padding:10px 12px 4px;
+}
+.sidebar-foot{
+  padding:12px 16px; font-size:10.5px; color:rgba(255,255,255,.45);
+  border-top:1px solid rgba(255,255,255,.1);
+}
+
+/* ---------- Main ---------- */
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{
+  background:var(--card); border-bottom:1px solid var(--line);
+  padding:16px 26px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:5;
+}
+.topbar h1{font-size:19px; margin:0; font-weight:800; color:var(--navy-3);}
+.topbar .desc{font-size:12.5px; color:var(--muted); margin-top:2px;}
+.content{padding:22px 26px 60px; flex:1;}
+
+/* ---------- Cards / KPI ---------- */
+.grid{display:grid; gap:14px;}
+.kpi-row{grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); margin-bottom:20px;}
+.kpi{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px 16px 14px;
+}
+.kpi .label{font-size:10.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--muted);}
+.kpi .value{font-size:26px; font-weight:800; color:var(--navy); margin-top:6px;}
+.kpi .value.small{font-size:20px;}
+
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:18px 20px; margin-bottom:18px;
+}
+.card h2{font-size:14px; margin:0 0 14px; color:var(--navy-3); font-weight:800; display:flex; align-items:center; justify-content:space-between;}
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+@media (max-width:900px){.two-col{grid-template-columns:1fr;}}
+
+/* ---------- Bars (dashboard chart, dependency-free) ---------- */
+.bars{display:flex; align-items:flex-end; gap:8px; height:160px; padding-top:10px;}
+.bar-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+.bar{
+  width:100%; background:linear-gradient(180deg,var(--navy),var(--navy-3)); border-radius:4px 4px 0 0;
+  min-height:2px; position:relative;
+}
+.bar-label{font-size:10px; color:var(--muted); margin-top:6px; font-weight:700;}
+.bar-val{font-size:9.5px; color:var(--navy); font-weight:800; margin-bottom:3px;}
+
+.hbar-row{display:flex; align-items:center; gap:8px; margin-bottom:7px;}
+.hbar-label{width:150px; font-size:11.5px; color:var(--ink); flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.hbar-track{flex:1; background:var(--bg); border-radius:5px; height:16px; overflow:hidden;}
+.hbar-fill{height:100%; background:linear-gradient(90deg,var(--navy),var(--gold)); border-radius:5px;}
+.hbar-val{width:32px; text-align:right; font-size:11px; font-weight:800; color:var(--navy); flex-shrink:0;}
+
+/* ---------- Forms ---------- */
+label{font-size:11px; font-weight:800; color:var(--navy-3); display:block; margin-bottom:5px; letter-spacing:.2px;}
+input,select,textarea{
+  width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:7px;
+  font-size:13px; font-family:var(--font); color:var(--ink); background:#fff;
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--navy-2); outline-offset:0; border-color:var(--navy-2);}
+.field{margin-bottom:12px;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.field-row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+.field-with-btn{display:flex; gap:6px; align-items:flex-end;}
+.field-with-btn .field{flex:1; margin-bottom:0;}
+.readonly-box{
+  background:var(--bg); border:1px dashed var(--line); border-radius:7px;
+  padding:8px 10px; font-size:12.5px; color:var(--ink); min-height:34px;
+  display:flex; align-items:center;
+}
+.readonly-box.empty{color:var(--muted); font-style:italic;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; gap:6px; justify-content:center;
+  padding:9px 14px; border-radius:7px; border:1px solid transparent;
+  font-size:12.5px; font-weight:700; cursor:pointer; font-family:var(--font);
+  transition:filter .12s ease, transform .05s ease;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--navy); color:#fff;}
+.btn-primary:hover{filter:brightness(1.12);}
+.btn-gold{background:var(--gold); color:var(--navy-3);}
+.btn-gold:hover{filter:brightness(1.06);}
+.btn-outline{background:#fff; color:var(--navy); border-color:var(--navy);}
+.btn-outline:hover{background:var(--bg);}
+.btn-add{background:var(--gold-light); color:var(--navy-3); border:1px solid var(--gold); white-space:nowrap;}
+.btn-add:hover{background:var(--gold);}
+.btn-danger{background:#fff; color:var(--danger); border-color:var(--danger);}
+.btn-danger:hover{background:#FDEDEB;}
+.btn-sm{padding:5px 9px; font-size:11.5px;}
+.btn[disabled]{opacity:.5; cursor:not-allowed;}
+
+/* ---------- Tables ---------- */
+.table-wrap{overflow:auto; border:1px solid var(--line); border-radius:var(--radius);}
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+thead th{
+  background:var(--navy); color:#fff; text-align:left; padding:10px 12px;
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; position:sticky; top:0; white-space:nowrap;
+}
+tbody td{padding:8px 12px; border-bottom:1px solid var(--line); white-space:nowrap;}
+tbody tr:hover{background:var(--bg);}
+tbody tr:nth-child(even){background:#FAFBFD;}
+tbody tr:nth-child(even):hover{background:var(--bg);}
+.pill{
+  display:inline-block; padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:800;
+}
+.pill-ok{background:#E4F4EC; color:var(--success);}
+.pill-warn{background:var(--warn-bg); color:#8A6D00;}
+.table-toolbar{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
+.search-box{flex:1; max-width:320px;}
+.count-tag{font-size:11.5px; color:var(--muted); font-weight:700;}
+
+/* ---------- Items table (guia/constancia builder) ---------- */
+.items-table th, .items-table td{padding:6px 8px;}
+.items-table input{padding:6px 8px; font-size:12px;}
+.item-remove{background:none; border:none; color:var(--danger); cursor:pointer; font-size:15px; line-height:1;}
+
+/* ---------- Doc preview (printable look) ---------- */
+.doc{
+  background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+  padding:0; overflow:hidden;
+}
+.doc-head{
+  background:var(--navy); color:#fff; padding:14px 20px;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.doc-head-left{display:flex; align-items:center; gap:12px; min-width:0;}
+.doc-table-green thead th{background:var(--navy-2);}
+.doc-head .co{font-weight:800; font-size:15px;}
+.doc-head .co-sub{font-size:11px; color:#CBD8EE; margin-top:2px;}
+.doc-head .num-box{background:var(--gold); color:var(--navy-3); border-radius:7px; padding:6px 16px; text-align:center;}
+.doc-head .num-box .l{font-size:9px; font-weight:800; letter-spacing:.4px;}
+.doc-head .num-box .n{font-size:20px; font-weight:800;}
+.doc-body{padding:18px 20px;}
+.doc-section-title{
+  background:var(--navy-2); color:#fff; font-size:10.5px; font-weight:800;
+  letter-spacing:.4px; padding:6px 10px; border-radius:5px; margin:14px 0 8px; text-transform:uppercase;
+}
+.doc-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.doc-kv{font-size:12px; margin-bottom:5px; display:flex; gap:6px;}
+.doc-kv b{color:var(--navy-3); min-width:100px; display:inline-block;}
+.doc-foot{padding:12px 20px; font-size:10px; color:var(--muted); text-align:center; border-top:1px dashed var(--line); font-style:italic;}
+
+/* ---------- Modal ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(15,23,42,.5); display:flex; align-items:center; justify-content:center;
+  z-index:100; padding:20px;
+}
+.modal{
+  background:#fff; border-radius:12px; padding:22px; width:100%; max-width:440px;
+  max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal h3{margin:0 0 4px; font-size:16px; color:var(--navy-3); font-weight:800;}
+.modal .modal-sub{font-size:12px; color:var(--muted); margin-bottom:16px;}
+.modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:18px;}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed; bottom:22px; right:22px; background:var(--navy-3); color:#fff;
+  padding:12px 18px; border-radius:8px; font-size:13px; font-weight:600;
+  box-shadow:0 10px 30px rgba(0,0,0,.25); z-index:200; display:flex; align-items:center; gap:8px;
+  animation:slideIn .18s ease;
+}
+.toast.err{background:var(--danger);}
+@keyframes slideIn{from{transform:translateY(10px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+
+.empty-state{text-align:center; padding:40px 20px; color:var(--muted);}
+.empty-state .big{font-size:32px; margin-bottom:8px;}
+
+.hint{font-size:11px; color:var(--muted); margin-top:4px;}
+.section-divider{height:1px; background:var(--line); margin:18px 0;}
+
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-thumb{background:#C7D0DE; border-radius:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+/* Boton "Menu" solo tiene sentido (y solo se muestra) en pantallas angostas,
+   donde el sidebar se puede ocultar. En escritorio el sidebar siempre esta
+   visible, asi que el boton se oculta para no parecer que "no hace nada". */
+#mobile-nav-btn{display:none;}
+
+@media (max-width:760px){
+  .sidebar{position:fixed; left:0; top:0; bottom:0; z-index:50; transform:translateX(-100%); transition:transform .2s ease;}
+  .sidebar.open{transform:translateX(0);}
+  .content{padding:16px;}
+  .doc-grid{grid-template-columns:1fr;}
+  .field-row, .field-row3{grid-template-columns:1fr;}
+  #mobile-nav-btn{display:inline-flex;}
+}
+
+/* ---------- Estado de guardado (online / offline) ---------- */
+.status-pill{
+  display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:20px;
+  font-size:11px; font-weight:800; letter-spacing:.2px;
+}
+.status-online{background:#E4F4EC; color:var(--success);}
+.status-offline{background:#FDEDEB; color:var(--danger);}
+.status-saving{background:var(--warn-bg); color:#8A6D00;}
+.status-dot{width:7px; height:7px; border-radius:50%; background:currentColor; display:inline-block;}
+
+/* ---------- Logo de la empresa ---------- */
+.logo-box{
+  width:64px; height:64px; border-radius:8px; background:#fff; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  border:2px dashed rgba(255,255,255,.5);
+}
+.logo-box img{width:100%; height:100%; object-fit:contain;}
+.logo-box.filled{border-style:solid; border-color:rgba(255,255,255,.25);}
+.logo-placeholder-text{font-size:8.5px; color:rgba(255,255,255,.85); text-align:center; font-weight:700; line-height:1.2;}
+.logo-settings-preview{
+  width:120px; height:120px; border-radius:10px; border:2px dashed var(--line); background:var(--bg);
+  display:flex; align-items:center; justify-content:center; overflow:hidden; margin:0 auto 14px;
+}
+.logo-settings-preview img{width:100%; height:100%; object-fit:contain;}
+
+/* ---------- Impresion: vista A5 y calibracion ---------- */
+.cal-panel{
+  background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
+  padding:14px 16px; margin-top:14px;
+}
+.cal-row{display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;}
+.cal-field{width:110px;}
+.cal-field label{font-size:10px;}
+.print-canvas-wrap{
+  overflow:auto; border:1px solid var(--line); border-radius:var(--radius); background:#DDD;
+  padding:20px; display:flex; justify-content:center;
+}
+.print-page{
+  background:#fff; position:relative; box-shadow:0 4px 18px rgba(0,0,0,.18); flex-shrink:0;
+}
+.print-page.a5-landscape{ width:210mm; height:148mm; }
+.print-page.a5-portrait{ width:148mm; height:210mm; }
+.print-field{
+  position:absolute; font-family:Arial, sans-serif; color:#000; white-space:nowrap; line-height:1.1;
+}
+.print-guides .print-field{ outline:1px dashed rgba(195,31,43,.35); }
+.print-field.small{font-size:8.5pt;}
+.print-field.med{font-size:10pt; font-weight:700;}
+.print-field.big{font-size:12pt; font-weight:700;}
+
+#print-root{ display:none; }
+
+@media print{
+  body > #app{ display:none !important; }
+  .modal-overlay:not(.print-modal){ display:none !important; }
+  #print-root{
+    display:block !important; position:fixed; inset:0; background:#fff; z-index:9999;
+  }
+  #print-root .no-print{ display:none !important; }
+  #print-root .print-canvas-wrap{ border:none; background:#fff; padding:0; display:block; }
+  #print-root .print-page{ box-shadow:none; margin:0; }
+  .print-guides .print-field{ outline:none !important; }
+  @page{ margin:0; }
+}
+
+
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+</head>
+<body><script>
+
+const API_URL = 'https://script.google.com/macros/s/AKfycby-9k7nZ9fgG-_DoEUASUtnasVWfg5wEcPDX8-z2Sy_uAkuP4DoSjuAXP5fmVtdFv41/exec';
+
+let DB = { clientes: [], vehiculos: [], choferes: [], constancias: [] };
+let VIEW = 'dashboard';
+let SAVE_STATUS = 'online';
+
+// Configuraciones locales (Logo y calibración de impresión) no van a la nube
+let configLocal = JSON.parse(localStorage.getItem('olivos_config')) || { logo: null, printCal: { constancia: {} } };
+
+async function initApp() {
+  document.body.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; gap:10px;"><div style="font-size:28px;">⏳</div><div>Sincronizando con Base de Datos...</div></div>';
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`Fallo HTTP: ${res.status}`);
+    DB = await res.json();
+    renderShell();
+  } catch (e) {
+    console.error("DETALLE DEL ERROR CRÍTICO:", e); // Esto revelará el bloqueo
+    alert("Error crítico: Revisa la consola y dime qué texto rojo aparece.");
+    document.body.innerHTML = '<h2>Error de conexión. Actualice la página.</h2>';
+  }
+}
+
+// Motor central de escritura hacia Google Sheets
+async function apiPost(action, data) {
+  setSaveStatus('saving');
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, data }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const result = await res.json();
+    setSaveStatus('online');
+    return result.status === 'success';
+  } catch(e) {
+    setSaveStatus('offline');
+    return false;
+  }
+}
+
+function saveLocalConfig() {
+  localStorage.setItem('olivos_config', JSON.stringify(configLocal));
+}
+
+function setSaveStatus(status) {
+  SAVE_STATUS = status;
+  const pill = document.getElementById('save-status-pill');
+  if (!pill) return;
+  const cfg = {
+    online:  { cls: 'status-online',  txt: 'Sincronizado' },
+    saving:  { cls: 'status-saving',  txt: 'Guardando en la nube...' },
+    offline: { cls: 'status-offline', txt: 'Error de red' },
+  }[status];
+  pill.className = 'status-pill ' + cfg.cls;
+  pill.innerHTML = `<span class="status-dot"></span><span>${cfg.txt}</span>`;
+}
+
+function el(tag, attrs = {}, children = []) {
+  const e = document.createElement(tag);
+  for (const k in attrs) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c === null || c === undefined) return;
+    // LA SOLUCIÓN: Ahora aceptamos tanto 'string' como 'number'
+    e.appendChild((typeof c === 'string' || typeof c === 'number') ? document.createTextNode(c) : c);
+  });
+  return e;
+} 
+
+
+function fmtDate(d) {
+  if (!d) return '-';
+  const dt = new Date(d + (d.length === 10 ? 'T00:00:00' : ''));
+  return isNaN(dt) ? d : dt.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function todayISO() {
+  const t = new Date();
+  return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+}
+
+function fmtMoney(n) {
+  return 'S/ ' + (Number(n) || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function nextConstanciaNumero() {
+  let max = 0;
+  DB.constancias.forEach(c => { if (c.numero && Number(c.numero) > max) max = Number(c.numero); });
+  return max + 1;
+}
+
+function findCliente(ruc) { return DB.clientes.find(c => String(c.ruc).trim() === String(ruc).trim()) || null; }
+
+function showToast(msg, isErr = false) {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+  const t = el('div', { id: 'toast', class: 'toast' + (isErr ? ' err' : '') }, [
+    el('span', {}, isErr ? '⚠️' : '✅'), el('span', {}, msg)
+  ]);
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+const NAV_ITEMS = [
+  { section: 'General' },
+  { id: 'dashboard', icon: '▦', label: 'Panel de control' },
+  { section: 'Emitir' },
+  { id: 'constancia', icon: '🧾', label: 'Nueva constancia' },
+  { section: 'Bases de datos' },
+  { id: 'clientes', icon: '👥', label: 'Clientes' },
+  { section: 'Historial' },
+  { id: 'registroConstancias', icon: '📋', label: 'Registro constancias' },
+  { section: 'Ajustes' },
+  { id: 'config', icon: '⚙️', label: 'Logo y configuración' },
+];
+
+function renderShell() {
+  document.body.innerHTML = '';
+  const app = el('div', { id: 'app' });
+  const sidebar = el('div', { class: 'sidebar', id: 'sidebar' }, [
+    el('div', { class: 'brand' }, [
+      el('div', { style: 'display:flex; align-items:center; gap:10px;' }, [
+        logoBox(46),
+        el('div', {}, [ el('div', { class: 'name' }, 'TRANSPORTES CIRIACO'), el('div', { class: 'sub' }, '"LOS OLIVOS"') ]),
+      ]),
+    ]),
+    el('div', { class: 'nav', id: 'nav' }),
+  ]);
+
+  const main = el('div', { class: 'main' }, [
+    el('div', { class: 'topbar' }, [
+      el('button', { class: 'btn btn-outline', id: 'mobile-nav-btn', onclick: () => document.getElementById('sidebar').classList.toggle('open')}, '☰'),
+      el('div', { style: 'flex:1; min-width:0;' }, [ el('h1', { id: 'view-title' }, ''), el('div', { class: 'desc', id: 'view-desc' }, '') ]),
+      el('div', { class: 'status-pill', id: 'save-status-pill' }),
+    ]),
+    el('div', { class: 'content', id: 'content' }),
+  ]);
+
+  app.appendChild(sidebar); app.appendChild(main); document.body.appendChild(app);
+  renderNav(); renderView(); setSaveStatus(SAVE_STATUS);
+}
+
+function logoBox(size) {
+  const box = el('div', { class: 'logo-box' + (configLocal.logo ? ' filled' : ''), style: `width:${size}px; height:${size}px;` });
+  configLocal.logo ? box.appendChild(el('img', { src: configLocal.logo })) : box.appendChild(el('div', { class: 'logo-placeholder-text' }, 'LOGO'));
+  return box;
+}
+
+function renderNav() {
+  const nav = document.getElementById('nav'); nav.innerHTML = '';
+  NAV_ITEMS.forEach(item => {
+    if (item.section) return nav.appendChild(el('div', { class: 'nav-label' }, item.section));
+    nav.appendChild(el('div', {
+      class: 'nav-item' + (VIEW === item.id ? ' active' : ''),
+      onclick: () => { VIEW = item.id; document.getElementById('sidebar').classList.remove('open'); renderNav(); renderView(); },
+    }, [ el('span', { class: 'nav-icon' }, item.icon), el('span', {}, item.label) ]));
+  });
+}
+
+function renderView() {
+  document.getElementById('view-title').textContent = VIEW.toUpperCase();
+  const content = document.getElementById('content'); content.innerHTML = ''; window.scrollTo(0, 0);
+  const renderers = { dashboard: renderDashboard, constancia: renderConstanciaForm, copiaConstancia: renderCopiaConstancia, clientes: renderClientes, registroConstancias: renderRegistroConstancias, config: renderConfig };
+  (renderers[VIEW] || renderDashboard)(content);
+}
+
+function goTo(view) { VIEW = view; renderNav(); renderView(); }
+function closeModal() { const ov = document.getElementById('modal-overlay'); if (ov) ov.remove(); }
+function openModal(contentEl) {
+  closeModal();
+  document.body.appendChild(el('div', { class: 'modal-overlay', id: 'modal-overlay', onclick: (ev) => { if (ev.target.id === 'modal-overlay') closeModal(); }}, [ el('div', { class: 'modal' }, contentEl) ]));
+}
+
+
+
+
+function openClienteModal(onCreated, clienteExistente) {
+  const esEdicion = !!clienteExistente;
+  const fRuc = el('input', { value: esEdicion ? clienteExistente.ruc : (clienteExistente || ''), placeholder: 'Ej: 20548411085' });
+  if (esEdicion) fRuc.disabled = true; // El RUC no debe cambiar porque es nuestra llave única
+
+  const fEmpresa = el('input', { value: esEdicion ? clienteExistente.empresa : '', placeholder: 'Razón social o Nombre' });
+  const fDir = el('input', { value: esEdicion ? clienteExistente.direccion : '', placeholder: 'Dirección completa' });
+  const fProv = el('input', { value: esEdicion ? clienteExistente.provincia : '', placeholder: 'Provincia' });
+  const fTel = el('input', { value: esEdicion ? clienteExistente.telefono : '', placeholder: 'Teléfono / Celular' });
+
+  openModal([
+    el('h3', {}, esEdicion ? '✏️ Editar cliente' : '+ Nuevo cliente'),
+    el('div', { class: 'field' }, [ el('label', {}, 'RUC / DNI *'), fRuc ]),
+    el('div', { class: 'field' }, [ el('label', {}, 'Empresa / Cliente *'), fEmpresa ]),
+    el('div', { class: 'field' }, [ el('label', {}, 'Dirección'), fDir ]),
+    el('div', { class: 'field-row' }, [
+      el('div', { class: 'field' }, [ el('label', {}, 'Provincia'), fProv ]),
+      el('div', { class: 'field' }, [ el('label', {}, 'Teléfono'), fTel ])
+    ]),
+    el('div', { class: 'modal-actions' }, [
+      el('button', { class: 'btn btn-outline', onclick: closeModal }, 'Cancelar'),
+      el('button', { class: 'btn btn-primary', onclick: async (e) => {
+        if (!fEmpresa.value) return alert('La Empresa es obligatoria');
+        const btn = e.target;
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        const datos = { ruc: fRuc.value, empresa: fEmpresa.value, direccion: fDir.value, provincia: fProv.value, telefono: fTel.value };
+        
+        if (esEdicion) {
+          if (await apiPost('update_cliente', datos)) {
+            // Actualizamos en memoria local (DB)
+            const index = DB.clientes.findIndex(c => String(c.ruc) === String(datos.ruc));
+            if (index !== -1) DB.clientes[index] = datos;
+            closeModal();
+            onCreated && onCreated(datos);
+            showToast('Cliente actualizado con éxito');
+          } else {
+            alert('Error al actualizar.');
+            btn.disabled = false; btn.textContent = 'Guardar';
+          }
+        } else {
+          if (findCliente(datos.ruc)) {
+            alert('Ya existe un cliente con ese RUC.');
+            btn.disabled = false; btn.textContent = 'Guardar';
+            return;
+          }
+          if (await apiPost('add_cliente', datos)) {
+            DB.clientes.push(datos);
+            closeModal();
+            onCreated && onCreated(datos);
+            showToast('Cliente guardado con éxito');
+          } else {
+            alert('Error al guardar.');
+            btn.disabled = false; btn.textContent = 'Guardar';
+          }
+        }
+      }}, esEdicion ? 'Actualizar cambios' : 'Guardar')
+    ])
+  ]);
+}
+
+
+
+
+function renderConfig(root) {
+  const card = el('div', { class: 'card' }, [ el('h2', {}, 'Ajustes Locales (Logo)') ]);
+  const fileInput = el('input', { type: 'file', accept: 'image/*' });
+  card.appendChild(fileInput);
+  card.appendChild(el('button', { class: 'btn btn-primary', onclick: () => {
+    const file = fileInput.files[0];
+    if(file) {
+      const reader = new FileReader();
+      reader.onload = () => { configLocal.logo = reader.result; saveLocalConfig(); renderShell(); };
+      reader.readAsDataURL(file);
+    }
+  }}, 'Aplicar Logo'));
+  root.appendChild(card);
+}
+
+function renderDashboard(root) {
+  root.appendChild(el('div', { class: 'grid kpi-row' }, [
+    el('div', { class: 'kpi' }, [el('div', { class: 'label' }, 'Constancias Emitidas'), el('div', { class: 'value' }, DB.constancias.length)]),
+    el('div', { class: 'kpi' }, [el('div', { class: 'label' }, 'Clientes Registrados'), el('div', { class: 'value' }, DB.clientes.length)])
+  ]));
+}
+
+
+
+function renderConstanciaForm(root) {
+  const state = { fecha: todayISO(), ruc: '', items: [{ desc: '', cant: '', importe: '' }] };
+  const card = el('div', { class: 'card' });
+  const rucInput = el('input', { placeholder: 'RUC / DNI del cliente', list: 'dl-clientes-c' });
+  const cliBox = el('div', { class: 'readonly-box empty' }, 'Ingresa RUC');
+  const obsInput = el('textarea', { placeholder: 'Observaciones (Ej: Mercadería frágil...)', rows: '2' });
+
+  // Botón dinámico para editar el cliente seleccionado
+  const editCliBtn = el('button', { class: 'btn btn-outline btn-sm', style: 'display:none; margin-top:6px;' }, '✏️ Editar datos de este cliente');
+
+  function actualizarCliBox() {
+    const ruc = rucInput.value.trim();
+    state.ruc = ruc; 
+    const cli = findCliente(ruc);
+    if (cli) {
+      cliBox.classList.remove('empty');
+      cliBox.innerHTML = `<div><strong>${cli.empresa}</strong><br><span style="font-size:11px; color:var(--muted);">Dir: ${cli.direccion || 'Falta dirección'} | Tel: ${cli.telefono || 'Falta teléfono'}</span></div>`;
+      editCliBtn.style.display = 'inline-flex';
+    } else {
+      cliBox.classList.add('empty');
+      cliBox.textContent = ruc ? 'Cliente no encontrado' : 'Ingresa RUC';
+      editCliBtn.style.display = 'none';
+    }
+  }
+
+  rucInput.addEventListener('input', actualizarCliBox);
+
+  // Acción al hacer clic en editar cliente al vuelo
+  editCliBtn.onclick = () => {
+    const cli = findCliente(state.ruc);
+    if (cli) {
+      openClienteModal(() => {
+        actualizarCliBox(); // Refresca la tarjeta con los nuevos datos
+      }, cli); // Le pasamos el objeto cliente actual para precargar sus datos
+    }
+  };
+
+  const itemsBody = el('tbody');
+  function renderItems() {
+    itemsBody.innerHTML = '';
+    state.items.forEach((item, idx) => {
+      const descI = el('input', { value: item.desc }), cantI = el('input', { value: item.cant }), impI = el('input', { value: item.importe });
+      descI.oninput = () => item.desc = descI.value; cantI.oninput = () => item.cant = cantI.value; impI.oninput = () => item.importe = impI.value;
+      itemsBody.appendChild(el('tr', {}, [ el('td', {}, descI), el('td', {}, cantI), el('td', {}, impI) ]));
+    });
+  }
+  renderItems();
+
+  card.appendChild(el('div', { class: 'field-with-btn' }, [ 
+    el('div', { class: 'field' }, [rucInput]), 
+    el('button', { class: 'btn btn-add btn-sm', onclick: () => openClienteModal((nuevo) => { rucInput.value = nuevo.ruc; actualizarCliBox(); }) }, '+ Cliente') 
+  ]));
+  card.appendChild(cliBox);
+  card.appendChild(editCliBtn); // Añadimos el botón de edición debajo de la caja del cliente
+
+  card.appendChild(el('table', { class: 'items-table' }, [ el('thead', {}, el('tr', {}, [el('th',{},'Descripción'), el('th',{},'Cant'), el('th',{},'Importe')])), itemsBody ]));
+  card.appendChild(el('button', { class: 'btn btn-outline btn-sm', style: 'margin-top: 10px;', onclick: () => { state.items.push({desc:'', cant:'', importe:''}); renderItems(); } }, '+ Agregar ítem'));
+  
+  card.appendChild(el('div', { class: 'field', style: 'margin-top: 15px;' }, [ el('label', {}, 'Observaciones'), obsInput ]));
+
+  card.appendChild(el('button', { class: 'btn btn-primary', style: 'margin-top: 20px;', onclick: async (e) => {
+    const btn = e.target; btn.disabled = true; btn.textContent = 'Procesando...';
+    const cli = findCliente(state.ruc);
+    if (!cli || !state.items[0].desc) {
+        btn.disabled = false; btn.textContent = 'Emitir Constancia';
+        return alert('Datos inválidos o falta descripción');
+    }
+    const nueva = { fecha: state.fecha, numero: nextConstanciaNumero(), cliente: cli.empresa, codigo: cli.ruc, items: state.items, obs: obsInput.value.trim() };
+    
+    if(await apiPost('add_constancia', nueva)) { 
+      DB.constancias.push(nueva); 
+      showToast('Constancia Emitida'); 
+      imprimirConstanciaPDF(nueva); 
+      goTo('registroConstancias'); 
+    }
+    btn.disabled = false; btn.textContent = 'Emitir Constancia';
+  }}, 'Emitir Constancia'));
+
+  root.appendChild(card);
+  root.appendChild(el('datalist', { id: 'dl-clientes-c' }, DB.clientes.map(c => el('option', { value: c.ruc }, c.empresa))));
+}
+
+
+function renderRegistroConstancias(root) {
+  // Contenedor principal y barra de herramientas
+  const toolbar = el('div', { style: 'display:flex; justify-content:space-between; margin-bottom: 15px; align-items:center;' });
+  const searchInput = el('input', { placeholder: 'Buscar por N°, Cliente o Fecha...', style: 'max-width: 300px;' });
+  const contador = el('span', { style: 'font-size: 12px; font-weight: bold; color: var(--muted);' });
+  
+  toolbar.appendChild(searchInput);
+  toolbar.appendChild(contador);
+
+  const wrap = el('div', { class: 'table-wrap' });
+  
+  // Función interna para dibujar la tabla basada en un arreglo filtrado
+  function dibujarTabla(datos) {
+    wrap.innerHTML = ''; // Limpiar tabla anterior
+    
+    // Invertir para mostrar los más recientes primero y limitar a 100 por rendimiento
+    const datosMostrar = datos.slice().reverse().slice(0, 100);
+    contador.textContent = `Mostrando ${datosMostrar.length} de ${datos.length} registros`;
+
+    const tbody = el('tbody', {}, datosMostrar.map(c => el('tr', {}, [
+      el('td', { style: 'font-weight:bold; color:var(--navy);' }, c.numero), 
+      el('td', {}, c.cliente || '-'), 
+      el('td', {}, fmtDate(c.fecha)),
+      el('td', {}, el('button', { class:'btn btn-outline btn-sm', onclick: () => imprimirConstanciaPDF(c) }, '🖨️ PDF'))
+    ])));
+
+    wrap.appendChild(el('table', {}, [
+      el('thead', {}, el('tr', {}, [
+        el('th',{},'N°'), el('th',{},'Cliente'), el('th',{},'Fecha'), el('th',{},'Acción')
+      ])),
+      tbody
+    ]));
+  }
+
+  // Inicializar con todos los datos
+  dibujarTabla(DB.constancias);
+
+  // Motor de búsqueda: Escucha cada vez que el usuario escribe
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    
+    // Filtrar si coincide el número, el cliente o la fecha
+    const filtrados = DB.constancias.filter(c => {
+      const numStr = String(c.numero).toLowerCase();
+      const cliStr = String(c.cliente || '').toLowerCase();
+      const fechaStr = String(fmtDate(c.fecha)).toLowerCase();
+      
+      return numStr.includes(query) || cliStr.includes(query) || fechaStr.includes(query);
+    });
+    
+    dibujarTabla(filtrados);
+  });
+
+  // Agregar todo al DOM
+  root.appendChild(el('div', { class: 'card' }, [toolbar, wrap]));
+}
+
+
+function renderCopiaConstancia(root) { root.appendChild(el('div', { class: 'card' }, [el('h2', {}, 'Buscador en construcción')])); }
+function renderClientes(root) {
+  const wrap = el('div', { class: 'table-wrap' });
+  wrap.appendChild(el('table', {}, [
+    el('thead', {}, el('tr', {}, [el('th',{},'RUC'), el('th',{},'Empresa')])),
+    el('tbody', {}, DB.clientes.map(c => el('tr', {}, [el('td', {}, c.ruc), el('td', {}, c.empresa)])))
+  ]));
+  root.appendChild(el('div', { class: 'card' }, [el('button', { class:'btn btn-primary', onclick: () => openClienteModal(()=>renderView()) }, '+ Nuevo Cliente'), wrap]));
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
+
+// Función para construir y generar el PDF estricto en A5
+function imprimirConstanciaPDF(c) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
+  const total = c.items.reduce((s, i) => s + (Number(i.importe) || 0), 0);
+  
+  // NUEVO: Buscar los datos completos del cliente usando el RUC/DNI guardado
+  const cli = findCliente(c.codigo);
+
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text('TRANSPORTES CIRIACO - "LOS OLIVOS"', 74, 18, { align: "center" });
+  
+  doc.setFontSize(11);
+  doc.setTextColor(195, 31, 43); 
+  doc.text(`CONSTANCIA N° ${c.numero}`, 74, 26, { align: "center" });
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0); 
+  doc.setFont("helvetica", "normal");
+  doc.text(`Fecha: ${fmtDate(c.fecha)}`, 14, 40);
+  doc.text(`Cliente: ${c.cliente || '-'}`, 14, 47);
+  doc.text(`RUC/DNI: ${c.codigo || '-'}`, 14, 54);
+  
+  // NUEVO: Teléfono inyectado dinámicamente desde la BD de clientes
+  doc.text(`Teléfono: ${cli ? cli.telefono : '-'}`, 14, 61); 
+
+  const bodyData = c.items.map(i => [
+    i.desc || '-',
+    String(i.cant || 0),
+    i.importe ? fmtMoney(i.importe) : '-'
+  ]);
+
+  doc.autoTable({
+    startY: 68, // NUEVO: Bajamos la tabla para que no pise el teléfono
+    head: [['Descripción', 'Cant.', 'Importe']],
+    body: bodyData,
+    theme: 'grid',
+    headStyles: { fillColor: [195, 31, 43], textColor: [255, 255, 255] }, 
+    styles: { font: 'helvetica', fontSize: 9, cellPadding: 3 },
+    columnStyles: { 
+      0: { cellWidth: 'auto' }, 
+      1: { halign: 'center', cellWidth: 20 }, 
+      2: { halign: 'right', cellWidth: 32 } 
+    }
+  });
+
+  const finalY = doc.lastAutoTable.finalY || 68; 
+  
+  doc.setFont("helvetica", "bold");
+  doc.text(`TOTAL: ${fmtMoney(total)}`, 134, finalY + 10, { align: "right" });
+
+  // NUEVO: Si hay observaciones, se imprimen debajo del total
+  if (c.obs) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.text(`Observaciones: ${c.obs}`, 14, finalY + 18, { maxWidth: 120 });
+  }
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(107, 103, 95); 
+  doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
+
+  window.open(doc.output('bloburl'), '_blank');
+}
+</script></body></html>
