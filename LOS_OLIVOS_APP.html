@@ -587,28 +587,62 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
+// Función para construir y generar el PDF estricto en A5 con diseño profesional
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
   const total = c.items.reduce((s, i) => s + (Number(i.importe) || 0), 0);
   const cli = findCliente(c.codigo);
 
-  doc.setFontSize(14);
+  // --- CABECERA INSTITUCIONAL ---
+  // Franja superior de color rojo marca (#C31F2B)
+  doc.setFillColor(195, 31, 43);
+  doc.rect(0, 0, 148, 24, "F");
+
+  // Franja delgada decorativa verde cinta (#4C7A2F) debajo de la principal
+  doc.setFillColor(76, 122, 47);
+  doc.rect(0, 24, 148, 2, "F");
+
+  // Título principal dentro de la cabecera
+  doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.text('TRANSPORTES CIRIACO - "LOS OLIVOS"', 74, 18, { align: "center" });
-  
-  doc.setFontSize(11);
-  doc.setTextColor(195, 31, 43); 
-  doc.text(`CONSTANCIA N° ${c.numero}`, 74, 26, { align: "center" });
+  doc.setFontSize(12);
+  doc.text('TRANSPORTES CIRIACO — "LOS OLIVOS"', 74, 10, { align: "center" });
 
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0); 
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Fecha: ${fmtDate(c.fecha)}`, 14, 40);
-  doc.text(`Cliente: ${c.cliente || '-'}`, 14, 47);
-  doc.text(`RUC/DNI: ${c.codigo || '-'}`, 14, 54);
-  doc.text(`Teléfono: ${cli ? cli.telefono : '-'}`, 14, 61); 
+  doc.text('Sistema de Guías y Constancias de Pago', 74, 16, { align: "center" });
 
+  // --- NÚMERO DE CONSTANCIA (Caja destacada a la derecha) ---
+  doc.setFillColor(255, 212, 0); // Fondo amarillo (#FFD400)
+  doc.roundedRect(102, 30, 36, 12, 1, 1, "F");
+  doc.setTextColor(34, 27, 23);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text('CONSTANCIA N°', 120, 34, { align: "center" });
+  doc.setFontSize(11);
+  doc.text(String(c.numero).padStart(4, '0'), 120, 40, { align: "center" });
+
+  // --- DATOS DEL CLIENTE ---
+  doc.setTextColor(34, 27, 23);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text('DATOS DEL CLIENTE:', 14, 34);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.text(`Fecha de Emisión: ${fmtDate(c.fecha)}`, 14, 40);
+  doc.text(`Señor(es): ${c.cliente || '-'}`, 14, 45);
+  doc.text(`RUC / DNI: ${c.codigo || '-'}`, 14, 50);
+  doc.text(`Teléfono: ${cli ? (cli.telefono || '-') : '-'}`, 14, 55);
+  doc.text(`Dirección: ${cli ? (cli.direccion || '-') : '-'}`, 14, 60);
+
+  // Línea divisoria sutil
+  doc.setDrawColor(230, 225, 214);
+  doc.setLineWidth(0.5);
+  doc.line(14, 64, 134, 64);
+
+  // --- TABLA DE ÍTEMS ---
   const bodyData = c.items.map(i => [
     i.desc || '-',
     String(i.cant || 0),
@@ -617,34 +651,67 @@ function imprimirConstanciaPDF(c) {
 
   doc.autoTable({
     startY: 68,
-    head: [['Descripción', 'Cant.', 'Importe']],
+    head: [['Descripción del Servicio / Carga', 'Cant.', 'Importe']],
     body: bodyData,
     theme: 'grid',
-    headStyles: { fillColor: [195, 31, 43], textColor: [255, 255, 255] }, 
-    styles: { font: 'helvetica', fontSize: 9, cellPadding: 3 },
+    headStyles: { 
+      fillColor: [76, 122, 47], // Verde cinta institucional para la tabla
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'left'
+    }, 
+    styles: { 
+      font: 'helvetica', 
+      fontSize: 8.5, 
+      cellPadding: 3,
+      textColor: [34, 27, 23]
+    },
     columnStyles: { 
       0: { cellWidth: 'auto' }, 
-      1: { halign: 'center', cellWidth: 20 }, 
-      2: { halign: 'right', cellWidth: 32 } 
+      1: { halign: 'center', cellWidth: 18 }, 
+      2: { halign: 'right', cellWidth: 28 } 
+    },
+    alternateRowStyles: {
+      fillColor: [243, 241, 236] // Color de fondo alternado suave (--bg)
     }
   });
 
-  const finalY = doc.lastAutoTable.finalY || 68; 
+  const finalY = doc.lastAutoTable.finalY || 70; 
+
+  // --- TOTAL ---
+  doc.setFillColor(243, 241, 236);
+  doc.roundedRect(90, finalY + 4, 44, 9, 1, 1, "F");
   
   doc.setFont("helvetica", "bold");
-  doc.text(`TOTAL: ${fmtMoney(total)}`, 134, finalY + 10, { align: "right" });
+  doc.setFontSize(10);
+  doc.setTextColor(195, 31, 43);
+  doc.text(`TOTAL: ${fmtMoney(total)}`, 130, finalY + 10, { align: "right" });
 
+  // --- OBSERVACIONES (Si existen) ---
+  let nextY = finalY + 18;
   if (c.obs) {
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "italic");
-      doc.text(`Observaciones: ${c.obs}`, 14, finalY + 18, { maxWidth: 120 });
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(34, 27, 23);
+    doc.text('Observaciones:', 14, nextY);
+    
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.text(c.obs, 14, nextY + 4, { maxWidth: 120 });
+    nextY += 12;
   }
 
-  doc.setFontSize(8);
+  // --- PIE DE PÁGINA ---
+  doc.setDrawColor(230, 225, 214);
+  doc.line(14, 190, 134, 190);
+
+  doc.setFontSize(7.5);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(107, 103, 95); 
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
+  doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
+  // Abre el PDF estilizado directamente en el visor
   window.open(doc.output('bloburl'), '_blank');
 }
 </script></body></html>
