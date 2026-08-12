@@ -752,20 +752,20 @@ function imprimirConstanciaPDF(c) {
 
   // --- DATOS DE LA SEDE (Alineación Izquierda "Efecto Pared") ---
   const lineasSede = infoSedes[SEDE_ACTUAL];
-  let ySede = 10; // Altura de inicio
+  let ySede = 16; // Altura de inicio
   
   // Esta es la "pared" invisible. Si aumentas el número, se mueve a la derecha. Si lo bajas, a la izquierda.
-  const xSede = 92; 
+  const xSede = 111; 
   
   // Nombre de la oficina (Negrita)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
+  doc.setFontSize(66);
   doc.setTextColor(34, 27, 23);
   doc.text(lineasSede[0], xSede, ySede, { align: "left" });
   
   // Dirección y referencias
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6); 
+  doc.setFontSize(5); 
   for (let i = 1; i < lineasSede.length; i++) {
     ySede += 3.5;
     // Resaltar en negrita el WhatsApp
