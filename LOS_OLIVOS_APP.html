@@ -1,7 +1,16 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LOS OLIVOS — Sistema de Constancias</title><style>:root{
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LOS OLIVOS — Sistema de Constancias</title>
+
+<!-- Etiquetas para que funcione como App Nativa en Celulares (PWA) -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C31F2B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ciriaco">
+
+<style>:root{
   --navy:#C31F2B;
   --navy-2:#4C7A2F;
   --navy-3:#7A141C;
@@ -27,7 +36,7 @@ body{
   color:var(--ink);
   min-height:100vh;
 }
-#app{display:flex; min-height:100vh;}
+#app{display:flex; min-height:100vh; position: relative;}
 
 .sidebar{
   width:220px;
@@ -40,6 +49,7 @@ body{
   top:0;
   height:100vh;
   overflow-y:auto;
+  z-index: 1000;
 }
 .brand{
   padding:20px 18px 14px;
@@ -67,7 +77,7 @@ body{
 .topbar{
   background:var(--card); border-bottom:1px solid var(--line);
   padding:16px 26px; display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; z-index:5;
+  position:sticky; top:0; z-index:5; gap: 10px;
 }
 .topbar h1{font-size:19px; margin:0; font-weight:800; color:var(--navy-3);}
 .content{padding:22px 26px 60px; flex:1;}
@@ -119,8 +129,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--navy-2); outline
 .btn-add:hover{background:var(--gold);}
 .btn-sm{padding:5px 9px; font-size:11.5px;}
 
-.table-wrap{overflow:auto; border:1px solid var(--line); border-radius:var(--radius);}
-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius);}
+table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:400px;}
 thead th{
   background:var(--navy); color:#fff; text-align:left; padding:10px 12px;
   font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; position:sticky; top:0; white-space:nowrap;
@@ -129,15 +139,15 @@ tbody td{padding:8px 12px; border-bottom:1px solid var(--line); white-space:nowr
 tbody tr:hover{background:var(--bg);}
 
 .items-table th, .items-table td{padding:6px 8px;}
-.items-table input{padding:6px 8px; font-size:12px;}
+.items-table input{padding:6px 8px; font-size:12px; min-width: 60px;}
 
 .modal-overlay{
   position:fixed; inset:0; background:rgba(15,23,42,.5); display:flex; align-items:center; justify-content:center;
-  z-index:100; padding:20px;
+  z-index:2000; padding:15px;
 }
 .modal{
   background:#fff; border-radius:12px; padding:22px; width:100%; max-width:440px;
-  max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3);
 }
 .modal h3{margin:0 0 4px; font-size:16px; color:var(--navy-3); font-weight:800;}
 .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:18px;}
@@ -145,13 +155,13 @@ tbody tr:hover{background:var(--bg);}
 .toast{
   position:fixed; bottom:22px; right:22px; background:var(--navy-3); color:#fff;
   padding:12px 18px; border-radius:8px; font-size:13px; font-weight:600;
-  box-shadow:0 10px 30px rgba(0,0,0,.25); z-index:200; display:flex; align-items:center; gap:8px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25); z-index:3000; display:flex; align-items:center; gap:8px;
 }
 .toast.err{background:var(--danger);}
 
 .status-pill{
   display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:20px;
-  font-size:11px; font-weight:800; letter-spacing:.2px;
+  font-size:11px; font-weight:800; letter-spacing:.2px; white-space:nowrap;
 }
 .status-online{background:#E4F4EC; color:var(--success);}
 .status-saving{background:var(--warn-bg); color:#8A6D00;}
@@ -166,6 +176,48 @@ tbody tr:hover{background:var(--bg);}
 .logo-box img{width:100%; height:100%; object-fit:contain;}
 .logo-box.filled{border-style:solid; border-color:rgba(255,255,255,.25);}
 .logo-placeholder-text{font-size:8.5px; color:rgba(255,255,255,.85); text-align:center; font-weight:700; line-height:1.2;}
+
+.menu-btn {
+  display: none;
+  background: none; border: none; font-size: 22px; color: var(--navy-3);
+  cursor: pointer; padding: 0; margin-right: 10px;
+}
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999;
+}
+
+/* ========================================================= */
+/* --- AJUSTES RESPONSIVE PARA MÓVILES (Menos de 768px) ---  */
+/* ========================================================= */
+@media (max-width: 768px) {
+  .menu-btn { display: block; }
+  .sidebar {
+    position: fixed; left: -250px; width: 250px;
+    transition: left 0.3s ease; box-shadow: 2px 0 15px rgba(0,0,0,0.5);
+  }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay.open { display: block; }
+  
+  .topbar { padding: 12px 16px; }
+  .topbar h1 { font-size: 16px; }
+  .content { padding: 16px 16px 80px; }
+  
+  .field-row { grid-template-columns: 1fr; } /* Los campos se apilan */
+  .field-with-btn { flex-direction: column; align-items: stretch; }
+  .field-with-btn .btn { width: 100%; margin-top: 5px; }
+  
+  .kpi-row { grid-template-columns: 1fr; }
+  .mobile-stack { flex-direction: column; align-items: stretch !important; gap: 10px; }
+  .mobile-stack input { max-width: 100% !important; }
+  
+  /* Achicar el texto del estado de conexión para que no estorbe */
+  #save-status-pill span:last-child { display: none; }
+  #save-status-pill { padding: 5px 8px; }
+  
+  .modal { padding: 18px; margin: 10px; max-height: 95vh; }
+  .modal-actions { flex-direction: column; }
+  .modal-actions .btn { width: 100%; }
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -287,9 +339,17 @@ const NAV_ITEMS = [
   { id: 'config', icon: '⚙️', label: 'Logo y configuración' },
 ];
 
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
 function renderShell() {
   document.body.innerHTML = '';
   const app = el('div', { id: 'app' });
+  
+  const sidebarOverlay = el('div', { class: 'sidebar-overlay', id: 'sidebar-overlay', onclick: toggleMenu });
+  
   const sidebar = el('div', { class: 'sidebar', id: 'sidebar' }, [
     el('div', { class: 'brand' }, [
       el('div', { style: 'display:flex; align-items:center; gap:10px;' }, [
@@ -302,7 +362,10 @@ function renderShell() {
 
   const main = el('div', { class: 'main' }, [
     el('div', { class: 'topbar' }, [
-      el('h1', { id: 'view-title' }, ''),
+      el('div', { style: 'display:flex; align-items:center;' }, [
+        el('button', { class: 'menu-btn', onclick: toggleMenu }, '☰'),
+        el('h1', { id: 'view-title' }, '')
+      ]),
       el('div', { style: 'display:flex; align-items:center; gap:10px;' }, [
         el('button', { 
           class: 'btn btn-outline btn-sm', 
@@ -331,6 +394,7 @@ function renderShell() {
     el('div', { class: 'content', id: 'content' })
   ]);
 
+  app.appendChild(sidebarOverlay);
   app.appendChild(sidebar); 
   app.appendChild(main); 
   document.body.appendChild(app);
@@ -339,19 +403,19 @@ function renderShell() {
   setSaveStatus(SAVE_STATUS);
 }
 
-function logoBox(size) {
-  const box = el('div', { class: 'logo-box' + (configLocal.logo ? ' filled' : ''), style: `width:${size}px; height:${size}px;` });
-  configLocal.logo ? box.appendChild(el('img', { src: configLocal.logo })) : box.appendChild(el('div', { class: 'logo-placeholder-text' }, 'LOGO'));
-  return box;
-}
-
 function renderNav() {
   const nav = document.getElementById('nav'); nav.innerHTML = '';
   NAV_ITEMS.forEach(item => {
     if (item.section) return nav.appendChild(el('div', { class: 'nav-label' }, item.section));
     nav.appendChild(el('div', {
       class: 'nav-item' + (VIEW === item.id ? ' active' : ''),
-      onclick: () => { VIEW = item.id; renderNav(); renderView(); },
+      onclick: () => { 
+        VIEW = item.id; 
+        renderNav(); 
+        renderView(); 
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('open');
+      },
     }, [ el('span', { class: 'nav-icon' }, item.icon), el('span', {}, item.label) ]));
   });
 }
@@ -503,7 +567,13 @@ function renderConstanciaForm(root) {
   card.appendChild(cliBox);
   card.appendChild(editCliBtn);
 
-  card.appendChild(el('table', { class: 'items-table' }, [ el('thead', {}, el('tr', {}, [el('th',{},'Descripción'), el('th',{},'Cant'), el('th',{},'Importe')])), itemsBody ]));
+  card.appendChild(el('div', { class: 'table-wrap', style: 'margin-top: 15px;' }, [
+    el('table', { class: 'items-table' }, [ 
+      el('thead', {}, el('tr', {}, [el('th',{},'Descripción'), el('th',{},'Cant'), el('th',{},'Importe')])), 
+      itemsBody 
+    ])
+  ]));
+  
   card.appendChild(el('button', { class: 'btn btn-outline btn-sm', style: 'margin-top: 10px;', onclick: () => { state.items.push({desc:'', cant:'', importe:''}); renderItems(); } }, '+ Agregar ítem'));
   
   card.appendChild(el('div', { class: 'field', style: 'margin-top: 15px;' }, [ el('label', {}, 'Observaciones'), obsInput ]));
@@ -531,7 +601,7 @@ function renderConstanciaForm(root) {
 }
 
 function renderRegistroConstancias(root) {
-  const toolbar = el('div', { style: 'display:flex; justify-content:space-between; margin-bottom: 15px; align-items:center;' });
+  const toolbar = el('div', { class: 'mobile-stack', style: 'display:flex; justify-content:space-between; margin-bottom: 15px; align-items:center;' });
   const searchInput = el('input', { placeholder: 'Buscar por N°, Cliente o Fecha...', style: 'max-width: 300px;' });
   const contador = el('span', { style: 'font-size: 12px; font-weight: bold; color: var(--muted);' });
   
