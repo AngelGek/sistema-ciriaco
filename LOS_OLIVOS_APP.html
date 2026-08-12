@@ -587,77 +587,69 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
-// Función definitiva con logotipo dinámico, dirección multilinea y zona de firmas simétricas
+// Función definitiva con cabecera verde continua, imagen ampliada, dirección multilinea y firmas
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
   const total = c.items.reduce((s, i) => s + (Number(i.importe) || 0), 0);
   const cli = findCliente(c.codigo);
 
-  // --- CABECERA INSTITUCIONAL ---
-  doc.setFillColor(195, 31, 43);
-  doc.rect(0, 0, 148, 26, "F");
+  // --- CABECERA INSTITUCIONAL (FONDO VERDE CONTINUO) ---
+  // RGB (174, 218, 129) es un verde claro aproximado al de tu imagen. 
+  // Si notas que el tono es un poco distinto, puedes jugar con esos tres números.
+  doc.setFillColor(174, 218, 129); 
+  doc.rect(0, 0, 148, 34, "F");
 
-  doc.setFillColor(76, 122, 47);
-  doc.rect(0, 26, 148, 2, "F");
+  // Franja delgada decorativa roja debajo de la cabecera verde
+  doc.setFillColor(195, 31, 43);
+  doc.rect(0, 34, 148, 2, "F");
 
   // --- INSERCIÓN DEL LOGOTIPO (Desde Ajustes Locales) ---
+  // Al ser del mismo color que el fondo, la imagen se fusionará creando el efecto de continuidad
   if (configLocal && configLocal.logo) {
     try {
       const imgType = configLocal.logo.includes('image/png') ? 'PNG' : 'JPEG';
-      doc.addImage(configLocal.logo, imgType, 4, 3, 26, 20);
+      // Imagen más grande: empieza en X:14, Y:4, Ancho: 110mm, Alto: 26mm
+      doc.addImage(configLocal.logo, imgType, 14, 4, 110, 26);
     } catch (e) {
       console.warn("No se pudo insertar el logo de Ajustes Locales", e);
     }
   }
 
-  // --- TEXTOS DE LA CABECERA ---
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text('TRANSPORTES CIRIACO EXPRESS S.A.', 33, 9);
-
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.text('Servicio de Transporte de Carga en General', 33, 14);
-  doc.text('RUC: 20602079270', 33, 19);
-  doc.text('TRANCIESA es la solución', 33, 23);
-
   // --- NÚMERO DE CONSTANCIA ---
   doc.setFillColor(255, 212, 0); 
-  doc.roundedRect(102, 31, 36, 12, 1, 1, "F");
+  doc.roundedRect(102, 40, 36, 12, 1, 1, "F");
   doc.setTextColor(34, 27, 23);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text('CONSTANCIA N°', 120, 35, { align: "center" });
+  doc.text('CONSTANCIA N°', 120, 44, { align: "center" });
   doc.setFontSize(11);
-  doc.text(String(c.numero).padStart(4, '0'), 120, 41, { align: "center" });
+  doc.text(String(c.numero).padStart(4, '0'), 120, 50, { align: "center" });
 
   // --- DATOS DEL CLIENTE ---
   doc.setTextColor(34, 27, 23);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text('DATOS DEL CLIENTE:', 14, 35);
+  doc.text('DATOS DEL CLIENTE:', 14, 44);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  doc.text(`Fecha de Emisión: ${fmtDate(c.fecha)}`, 14, 41);
-  doc.text(`Señor(es): ${c.cliente || '-'}`, 14, 46);
-  doc.text(`RUC / DNI: ${c.codigo || '-'}`, 14, 51);
-  doc.text(`Teléfono: ${cli ? (cli.telefono || '-') : '-'}`, 14, 56);
+  doc.text(`Fecha de Emisión: ${fmtDate(c.fecha)}`, 14, 50);
+  doc.text(`Señor(es): ${c.cliente || '-'}`, 14, 55);
+  doc.text(`RUC / DNI: ${c.codigo || '-'}`, 14, 60);
+  doc.text(`Teléfono: ${cli ? (cli.telefono || '-') : '-'}`, 14, 65);
   
   // Ajuste dinámico para direcciones largas
   const dirText = `Dirección: ${cli ? (cli.direccion || '-') : '-'}`;
-  // Corta el texto si sobrepasa los 120mm de ancho
   const dirLines = doc.splitTextToSize(dirText, 120); 
-  doc.text(dirLines, 14, 61);
+  doc.text(dirLines, 14, 70);
 
   // Calculamos cuánto espacio extra ocupó la dirección para empujar la tabla hacia abajo
   const offsetDir = (dirLines.length - 1) * 4; 
 
   doc.setDrawColor(230, 225, 214);
   doc.setLineWidth(0.5);
-  doc.line(14, 65 + offsetDir, 134, 65 + offsetDir);
+  doc.line(14, 74 + offsetDir, 134, 74 + offsetDir);
 
   // --- TABLA DE ÍTEMS ---
   const bodyData = c.items.map(i => [
@@ -667,7 +659,7 @@ function imprimirConstanciaPDF(c) {
   ]);
 
   doc.autoTable({
-    startY: 69 + offsetDir, // La tabla inicia más abajo si la dirección es muy larga
+    startY: 78 + offsetDir, // La tabla inicia más abajo
     head: [['Descripción del Servicio / Carga', 'Cant.', 'Importe']],
     body: bodyData,
     theme: 'grid',
@@ -693,7 +685,7 @@ function imprimirConstanciaPDF(c) {
     }
   });
 
-  const finalY = doc.lastAutoTable.finalY || (70 + offsetDir); 
+  const finalY = doc.lastAutoTable.finalY || (79 + offsetDir); 
 
   // --- TOTAL ---
   doc.setFillColor(243, 241, 236);
