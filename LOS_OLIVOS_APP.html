@@ -587,7 +587,7 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
-// Función definitiva con cabecera verde, logo, datos de sede automáticos, dirección multilinea y firmas
+// Función definitiva con datos de sede alineados a la izquierda (efecto "pared")
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
@@ -640,27 +640,30 @@ function imprimirConstanciaPDF(c) {
     }
   }
 
-  // --- DATOS DE LA SEDE EN ESQUINA SUPERIOR DERECHA ---
+  // --- DATOS DE LA SEDE (Alineación Izquierda "Efecto Pared") ---
   const lineasSede = infoSedes[SEDE_ACTUAL];
-  let ySede = 10; // Inicio vertical centrado en la cabecera
+  let ySede = 10; // Altura de inicio
+  
+  // Esta es la "pared" invisible. Si aumentas el número, se mueve a la derecha. Si lo bajas, a la izquierda.
+  const xSede = 92; 
   
   // Nombre de la oficina (Negrita)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
-  doc.setTextColor(34, 27, 23); // Color oscuro para contraste
-  doc.text(lineasSede[0], 144, ySede, { align: "right" });
+  doc.setTextColor(34, 27, 23);
+  doc.text(lineasSede[0], xSede, ySede, { align: "left" });
   
   // Dirección y referencias
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6); // Texto pequeño para que no invada al logo
+  doc.setFontSize(6); 
   for (let i = 1; i < lineasSede.length; i++) {
     ySede += 3.5;
     // Resaltar en negrita el WhatsApp
     if (i === lineasSede.length - 1) {
         doc.setFont("helvetica", "bold");
-        ySede += 1; // Espacio extra antes del WhatsApp
+        ySede += 1; 
     }
-    doc.text(lineasSede[i], 144, ySede, { align: "right" });
+    doc.text(lineasSede[i], xSede, ySede, { align: "left" });
   }
 
   // --- NÚMERO DE CONSTANCIA ---
@@ -705,7 +708,7 @@ function imprimirConstanciaPDF(c) {
   ]);
 
   doc.autoTable({
-    startY: 78 + offsetDir, // La tabla inicia más abajo
+    startY: 78 + offsetDir, 
     head: [['Descripción del Servicio / Carga', 'Cant.', 'Importe']],
     body: bodyData,
     theme: 'grid',
@@ -756,12 +759,11 @@ function imprimirConstanciaPDF(c) {
   }
 
   // --- ZONA DE FIRMAS SIMÉTRICAS ---
-  const yFirma = 172; // Posición fija inferior en la hoja A5
+  const yFirma = 172; 
 
-  // 1. Línea de firma Cliente (Izquierda)
   doc.setDrawColor(34, 27, 23);
   doc.setLineWidth(0.3);
-  doc.line(16, yFirma, 66, yFirma); // Ancho de 50mm
+  doc.line(16, yFirma, 66, yFirma); 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(34, 27, 23);
@@ -770,10 +772,9 @@ function imprimirConstanciaPDF(c) {
   doc.setFontSize(7);
   doc.text('DNI / Nombre:', 16, yFirma + 9);
 
-  // 2. Línea de firma Empresa (Derecha)
   doc.setDrawColor(34, 27, 23);
   doc.setLineWidth(0.3);
-  doc.line(82, yFirma, 132, yFirma); // Ancho de 50mm
+  doc.line(82, yFirma, 132, yFirma); 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(34, 27, 23);
