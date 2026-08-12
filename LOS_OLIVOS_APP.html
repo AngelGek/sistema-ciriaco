@@ -587,7 +587,7 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
-// Función definitiva con logotipo dinámico, dirección multilinea, firma, sello y visor modal
+// Función definitiva con logotipo dinámico, dirección multilinea y zona de firmas simétricas
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
@@ -615,7 +615,7 @@ function imprimirConstanciaPDF(c) {
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text('TRANSPORTES CIRIACO EXPRESS S.A.  -  LOS OLIVOS', 33, 9);
+  doc.text('TRANSPORTES CIRIACO EXPRESS S.A.', 33, 9);
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
@@ -717,30 +717,29 @@ function imprimirConstanciaPDF(c) {
     doc.text(c.obs, 14, nextY + 4, { maxWidth: 120 });
   }
 
-  // --- ZONA DE FIRMA Y SELLO DE ENTREGADO ---
-  const yFirma = 172; // Posición fija inferior
+  // --- ZONA DE FIRMAS SIMÉTRICAS ---
+  const yFirma = 172; // Posición fija inferior en la hoja A5
 
-  // 1. Línea y datos de Firma (Izquierda)
+  // 1. Línea de firma Cliente (Izquierda)
   doc.setDrawColor(34, 27, 23);
   doc.setLineWidth(0.3);
-  doc.line(16, yFirma, 66, yFirma);
+  doc.line(16, yFirma, 66, yFirma); // Ancho de 50mm
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(34, 27, 23);
-  doc.text('FIRMA DE RECEPCIÓN', 41, yFirma + 4, { align: "center" });
+  doc.text('RECIBÍ CONFORME', 41, yFirma + 4, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.text('DNI / Nombre:', 16, yFirma + 9);
 
-  // 2. Recuadro para el Sello (Derecha)
-  doc.setDrawColor(180, 180, 180); 
-  doc.setLineWidth(0.5);
-  doc.rect(94, yFirma - 14, 36, 18);
+  // 2. Línea de firma Empresa (Derecha)
+  doc.setDrawColor(34, 27, 23);
+  doc.setLineWidth(0.3);
+  doc.line(82, yFirma, 132, yFirma); // Ancho de 50mm
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(180, 180, 180); 
-  doc.text('SELLO DE', 112, yFirma - 6, { align: "center" });
-  doc.text('ENTREGADO', 112, yFirma - 1, { align: "center" });
+  doc.setFontSize(8);
+  doc.setTextColor(34, 27, 23);
+  doc.text('TRANSPORTES CIRIACO EXPRESS S.A.', 107, yFirma + 4, { align: "center" });
 
   // --- PIE DE PÁGINA ---
   doc.setDrawColor(230, 225, 214);
