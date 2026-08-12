@@ -587,33 +587,80 @@ function renderClientes(root) {
 
 window.addEventListener('DOMContentLoaded', initApp);
 
-// Función definitiva con cabecera verde continua, imagen ampliada, dirección multilinea y firmas
+// Función definitiva con cabecera verde, logo, datos de sede automáticos, dirección multilinea y firmas
 function imprimirConstanciaPDF(c) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5" });
   const total = c.items.reduce((s, i) => s + (Number(i.importe) || 0), 0);
   const cli = findCliente(c.codigo);
 
+  // =========================================================
+  // --- 1. CONFIGURACIÓN DE LA SEDE ACTUAL ---
+  // Cambia "LOS OLIVOS" por "SUPE PUEBLO" o "LA VICTORIA" 
+  // dependiendo de la sede donde se use este archivo.
+  // =========================================================
+  const SEDE_ACTUAL = "LOS OLIVOS"; 
+  
+  const infoSedes = {
+    "LOS OLIVOS": [
+      "OFICINA - LOS OLIVOS",
+      "JR. HELIO N°5508 URB. IND. INFANTA",
+      "(REF: ESPALDA DE LA NISSAN,",
+      "FRENTE A BALANZA PROVESUR)",
+      "WhatsApp: 933 780 988"
+    ],
+    "SUPE PUEBLO": [
+      "OFICINA - SUPE PUEBLO",
+      "AV. FRANCISCO VIDAL N°1112",
+      "(REF: CRUZ MISIONERA)",
+      "WhatsApp: 994 053 666 / 947 938 354"
+    ],
+    "LA VICTORIA": [
+      "OFICINA - LA VICTORIA",
+      "AV. BAUZATE Y MEZA N°975",
+      "WhatsApp: 946 215 110"
+    ]
+  };
+
   // --- CABECERA INSTITUCIONAL (FONDO VERDE CONTINUO) ---
-  // RGB (174, 218, 129) es un verde claro aproximado al de tu imagen. 
-  // Si notas que el tono es un poco distinto, puedes jugar con esos tres números.
   doc.setFillColor(184, 220, 124); 
   doc.rect(0, 0, 148, 34, "F");
 
-  // Franja delgada decorativa roja debajo de la cabecera verde
+  // Franja delgada decorativa roja
   doc.setFillColor(195, 31, 43);
   doc.rect(0, 34, 148, 2, "F");
 
-  // --- INSERCIÓN DEL LOGOTIPO (Desde Ajustes Locales) ---
-  // Al ser del mismo color que el fondo, la imagen se fusionará creando el efecto de continuidad
+  // --- INSERCIÓN DEL LOGOTIPO ---
   if (configLocal && configLocal.logo) {
     try {
       const imgType = configLocal.logo.includes('image/png') ? 'PNG' : 'JPEG';
-      // Imagen más grande: empieza en X:14, Y:4, Ancho: 110mm, Alto: 26mm
       doc.addImage(configLocal.logo, imgType, 0, 0, 110, 34);
     } catch (e) {
       console.warn("No se pudo insertar el logo de Ajustes Locales", e);
     }
+  }
+
+  // --- DATOS DE LA SEDE EN ESQUINA SUPERIOR DERECHA ---
+  const lineasSede = infoSedes[SEDE_ACTUAL];
+  let ySede = 10; // Inicio vertical centrado en la cabecera
+  
+  // Nombre de la oficina (Negrita)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(34, 27, 23); // Color oscuro para contraste
+  doc.text(lineasSede[0], 144, ySede, { align: "right" });
+  
+  // Dirección y referencias
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6); // Texto pequeño para que no invada al logo
+  for (let i = 1; i < lineasSede.length; i++) {
+    ySede += 3.5;
+    // Resaltar en negrita el WhatsApp
+    if (i === lineasSede.length - 1) {
+        doc.setFont("helvetica", "bold");
+        ySede += 1; // Espacio extra antes del WhatsApp
+    }
+    doc.text(lineasSede[i], 144, ySede, { align: "right" });
   }
 
   // --- NÚMERO DE CONSTANCIA ---
@@ -644,7 +691,6 @@ function imprimirConstanciaPDF(c) {
   const dirLines = doc.splitTextToSize(dirText, 120); 
   doc.text(dirLines, 14, 70);
 
-  // Calculamos cuánto espacio extra ocupó la dirección para empujar la tabla hacia abajo
   const offsetDir = (dirLines.length - 1) * 4; 
 
   doc.setDrawColor(230, 225, 214);
