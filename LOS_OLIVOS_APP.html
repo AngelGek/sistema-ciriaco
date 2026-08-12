@@ -202,7 +202,7 @@ tbody tr:hover{background:var(--bg);}
   .topbar h1 { font-size: 16px; }
   .content { padding: 16px 16px 80px; }
   
-  .field-row { grid-template-columns: 1fr; } /* Los campos se apilan */
+  .field-row { grid-template-columns: 1fr; }
   .field-with-btn { flex-direction: column; align-items: stretch; }
   .field-with-btn .btn { width: 100%; margin-top: 5px; }
   
@@ -210,7 +210,6 @@ tbody tr:hover{background:var(--bg);}
   .mobile-stack { flex-direction: column; align-items: stretch !important; gap: 10px; }
   .mobile-stack input { max-width: 100% !important; }
   
-  /* Achicar el texto del estado de conexión para que no estorbe */
   #save-status-pill span:last-child { display: none; }
   #save-status-pill { padding: 5px 8px; }
   
@@ -237,10 +236,7 @@ async function initApp() {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error(`Fallo HTTP: ${res.status}`);
     const data = await res.json();
-    
-    // Verificamos si Google devolvió un error propio disfrazado de éxito
     if (data && data.status === "error") throw new Error(data.message || "Error interno del servidor Google");
-    
     DB = { clientes: [], vehiculos: [], choferes: [], constancias: [], ...data };
     renderShell();
   } catch (e) {
@@ -248,8 +244,8 @@ async function initApp() {
     document.body.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; text-align:center; padding:20px; font-family: sans-serif;">
         <h2 style="color:#C0392B; margin-bottom:5px;">Error de conexión</h2>
-        <p style="color:#6B675F;">El sistema no pudo conectar con la base de datos de Google Script.</p>
-        <div style="background:#FDEDEB; padding:15px; border-radius:8px; color:#C0392B; margin: 15px 0; font-family:monospace; max-width:80%; border: 1px solid #C0392B;">
+        <p style="color:#6B675F;">El sistema no pudo iniciar correctamente.</p>
+        <div style="background:#FDEDEB; padding:15px; border-radius:8px; color:#C0392B; margin: 15px 0; font-family:monospace; max-width:80%; border: 1px solid #C0392B; word-break: break-all;">
           <strong>Motivo exacto:</strong> ${e.message}
         </div>
         <button onclick="location.reload()" style="padding:10px 20px; border-radius:7px; border:none; background:#C31F2B; color:white; font-weight:bold; cursor:pointer;">↻ Reintentar</button>
@@ -357,6 +353,13 @@ function toggleMenu() {
   document.getElementById('sidebar-overlay').classList.toggle('open');
 }
 
+// LA FUNCION LOGOBOX QUE FALTABA
+function logoBox(size) {
+  const box = el('div', { class: 'logo-box' + (configLocal.logo ? ' filled' : ''), style: `width:${size}px; height:${size}px;` });
+  configLocal.logo ? box.appendChild(el('img', { src: configLocal.logo })) : box.appendChild(el('div', { class: 'logo-placeholder-text' }, 'LOGO'));
+  return box;
+}
+
 function renderShell() {
   document.body.innerHTML = '';
   const app = el('div', { id: 'app' });
@@ -366,7 +369,7 @@ function renderShell() {
   const sidebar = el('div', { class: 'sidebar', id: 'sidebar' }, [
     el('div', { class: 'brand' }, [
       el('div', { style: 'display:flex; align-items:center; gap:10px;' }, [
-        logoBox(46),
+        logoBox(46), // AQUI SE LLAMA LA FUNCION QUE FALTABA
         el('div', {}, [ el('div', { class: 'name' }, 'TRANSPORTES CIRIACO'), el('div', { class: 'sub' }, '"LOS OLIVOS"') ]),
       ]),
     ]),
@@ -690,7 +693,7 @@ function imprimirConstanciaPDF(c) {
       "JR. HELIO N°5508 URB. IND. INFANTA",
       "(REF: ESPALDA DE LA NISSAN,",
       "FRENTE A BALANZA PROVESUR)",
-      "WhatsApp: 933 662 255"
+      "WhatsApp: 933 780 988"
     ],
     "SUPE PUEBLO": [
       "OFICINA - SUPE PUEBLO",
@@ -725,20 +728,20 @@ function imprimirConstanciaPDF(c) {
 
   // --- DATOS DE LA SEDE (Alineación Izquierda "Efecto Pared") ---
   const lineasSede = infoSedes[SEDE_ACTUAL];
-  let ySede = 16; // Altura de inicio
+  let ySede = 10; // Altura de inicio
   
   // Esta es la "pared" invisible. Si aumentas el número, se mueve a la derecha. Si lo bajas, a la izquierda.
-  const xSede = 111; 
+  const xSede = 92; 
   
   // Nombre de la oficina (Negrita)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6);
+  doc.setFontSize(7);
   doc.setTextColor(34, 27, 23);
   doc.text(lineasSede[0], xSede, ySede, { align: "left" });
   
   // Dirección y referencias
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(5); 
+  doc.setFontSize(6); 
   for (let i = 1; i < lineasSede.length; i++) {
     ySede += 3.5;
     // Resaltar en negrita el WhatsApp
