@@ -1,0 +1,15 @@
+{
+  "name": "Constancias Ciriaco",
+  "short_name": "Ciriaco",
+  "start_url": "./LOS_OLIVOS_APP.html",
+  "display": "standalone",
+  "background_color": "#F3F1EC",
+  "theme_color": "#C31F2B",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2764/2764434.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
