@@ -229,7 +229,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycby-9k7nZ9fgG-_DoEUASUtn
 let DB = { clientes: [], vehiculos: [], choferes: [], constancias: [] };
 let VIEW = 'dashboard';
 let SAVE_STATUS = 'online';
-let configLocal = JSON.parse(localStorage.getItem('olivos_config')) || { logo: null };
+let configLocal = JSON.parse(localStorage.getItem('olivos_config')) || { logo: null, sede: 'LOS OLIVOS' };
 
 async function initApp() {
   document.body.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; gap:10px;"><div style="font-size:28px;">⏳</div><div>Sincronizando con Base de Datos...</div></div>';
@@ -513,9 +513,31 @@ function openClienteModal(onCreated, clienteExistente) {
 }
 
 function renderConfig(root) {
-  const card = el('div', { class: 'card' }, [ el('h2', {}, 'Ajustes Locales (Logo)') ]);
+  const card = el('div', { class: 'card' }, [ el('h2', {}, 'Ajustes Locales') ]);
+  
+  // Selector de Sede
+  const sedeLabel = el('label', {}, 'Sede de esta Oficina');
+  const sedeSelect = el('select', { style: 'margin-bottom: 20px;' }, [
+    el('option', { value: 'LOS OLIVOS' }, 'Oficina - Los Olivos'),
+    el('option', { value: 'SUPE PUEBLO' }, 'Oficina - Supe Pueblo'),
+    el('option', { value: 'LA VICTORIA' }, 'Oficina - La Victoria')
+  ]);
+  sedeSelect.value = configLocal.sede || 'LOS OLIVOS';
+  sedeSelect.onchange = () => {
+    configLocal.sede = sedeSelect.value;
+    saveLocalConfig();
+    showToast('Sede actualizada correctamente');
+  };
+  
+  // Selector de Logo
+  const logoLabel = el('label', {}, 'Logotipo Corporativo');
   const fileInput = el('input', { type: 'file', accept: 'image/*' });
+  
+  card.appendChild(sedeLabel);
+  card.appendChild(sedeSelect);
+  card.appendChild(logoLabel);
   card.appendChild(fileInput);
+  
   card.appendChild(el('button', { class: 'btn btn-primary', style: 'margin-top:10px;', onclick: () => {
     const file = fileInput.files[0];
     if(file) {
@@ -524,6 +546,7 @@ function renderConfig(root) {
       reader.readAsDataURL(file);
     }
   }}, 'Aplicar Logo'));
+  
   root.appendChild(card);
 }
 
@@ -686,7 +709,7 @@ function imprimirConstanciaPDF(c) {
   // Cambia "LOS OLIVOS" por "SUPE PUEBLO" o "LA VICTORIA" 
   // dependiendo de la sede donde se use este archivo.
   // =========================================================
-  const SEDE_ACTUAL = "LOS OLIVOS"; 
+  const SEDE_ACTUAL = configLocal.sede || "LOS OLIVOS";
   
   const infoSedes = {
     "LOS OLIVOS": [
