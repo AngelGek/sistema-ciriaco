@@ -610,7 +610,7 @@ function imprimirConstanciaPDF(c) {
     try {
       const imgType = configLocal.logo.includes('image/png') ? 'PNG' : 'JPEG';
       // Imagen más grande: empieza en X:14, Y:4, Ancho: 110mm, Alto: 26mm
-      doc.addImage(configLocal.logo, imgType, 1, 1, 110, 33);
+      doc.addImage(configLocal.logo, imgType, 0, 0, 110, 34);
     } catch (e) {
       console.warn("No se pudo insertar el logo de Ajustes Locales", e);
     }
