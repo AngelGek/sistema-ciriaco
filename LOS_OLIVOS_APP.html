@@ -900,25 +900,53 @@ function imprimirConstanciaPDF(c) {
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
   doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
-  // --- GENERAR VISOR FLOTANTE EN MODAL ---
-  const pdfBlobUrl = doc.output('bloburl');
-  const iframe = el('iframe', { src: pdfBlobUrl, style: 'width:100%; height:450px; border:1px solid var(--line); border-radius:8px;' });
-  
-  const btnImprimir = el('button', { 
-    class: 'btn btn-primary', 
-    onclick: () => iframe.contentWindow.print() 
-  }, '🖨️ Imprimir Constancia');
+ // --- GENERAR ACCIONES DEL PDF PARA MÓVILES ---
+  const nombreArchivo = `Constancia_${String(c.numero).padStart(4, '0')}.pdf`;
 
+  // Botón 1: Descargar el archivo directamente a la memoria
+  const btnDescargar = el('button', { 
+    class: 'btn btn-primary', 
+    onclick: () => {
+      doc.save(nombreArchivo);
+    } 
+  }, '⬇️ Descargar PDF');
+
+  // Botón 2: Compartir directo a WhatsApp (o cualquier red)
+  const btnCompartir = el('button', { 
+    class: 'btn',
+    style: 'background: #25D366; color: white; border: none;',
+    onclick: async () => {
+      try {
+        const pdfBlob = doc.output('blob');
+        const file = new File([pdfBlob], nombreArchivo, { type: 'application/pdf' });
+        // Si el celular soporta la función de compartir archivos nativa
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: nombreArchivo });
+        } else {
+          // Si es una PC o no lo soporta, forzamos la descarga
+          doc.save(nombreArchivo); 
+        }
+      } catch(e) {
+        console.error("Acción cancelada o error al compartir", e);
+      }
+    } 
+  }, '📲 Enviar por WhatsApp');
+
+  // Botón 3: Cerrar modal
   const btnCerrar = el('button', { 
     class: 'btn btn-outline', 
     onclick: closeModal 
-  }, 'Cerrar');
+  }, 'Cerrar ventana');
 
+  // Modal simplificado sin Iframe
   openModal([
     el('h3', {}, `Constancia N° ${String(c.numero).padStart(4, '0')}`),
-    el('p', { class: 'modal-sub' }, 'Vista previa del documento listo para imprimir:'),
-    iframe,
-    el('div', { class: 'modal-actions', style: 'margin-top:14px;' }, [btnCerrar, btnImprimir])
+    el('p', { class: 'modal-sub', style: 'margin-bottom:15px;' }, 'Documento generado con éxito. Seleccione una acción:'),
+    el('div', { class: 'modal-actions', style: 'display:flex; flex-direction:column; gap:10px; margin-top:5px;' }, [
+      btnCompartir, 
+      btnDescargar, 
+      btnCerrar
+    ])
   ]);
 }
 </script></body></html>
