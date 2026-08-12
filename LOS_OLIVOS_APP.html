@@ -649,13 +649,13 @@ function imprimirConstanciaPDF(c) {
   
   // Nombre de la oficina (Negrita)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   doc.setTextColor(34, 27, 23);
   doc.text(lineasSede[0], xSede, ySede, { align: "left" });
   
   // Dirección y referencias
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6); 
+  doc.setFontSize(5); 
   for (let i = 1; i < lineasSede.length; i++) {
     ySede += 3.5;
     // Resaltar en negrita el WhatsApp
