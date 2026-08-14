@@ -889,16 +889,23 @@ function imprimirConstanciaPDF(c) {
   doc.setFontSize(8);
   doc.setTextColor(34, 27, 23);
   doc.text('TRANSPORTES CIRIACO EXPRESS S.A.', 107, yFirma + 4, { align: "center" });
-
-  // --- PIE DE PÁGINA ---
+// --- PIE DE PÁGINA ---
   doc.setDrawColor(230, 225, 214);
-  doc.line(14, 190, 134, 190);
+  doc.line(14, 187, 134, 187);
 
+  doc.setTextColor(107, 103, 95); 
+
+  // Línea 1: Advertencia SUNAT (Y = 191) - Va primero
+  doc.setFontSize(6.5);
+  doc.setFont("helvetica", "bolditalic");
+  doc.text('¡OJO: LA EMPRESA NO SE RESPONSABILIZA POR PÉRDIDA, ROBO O RETENCIÓN POR PARTE DE LA SUNAT DE LAS MERCADERÍAS SIN GUÍA!', 74, 191, { align: "center" });
+
+  // Línea 2: Cuenta bancaria (Y = 195) - Va en medio
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "italic");
-  doc.setTextColor(107, 103, 95); 
-  doc.text('¡OJO: LA EMPRESA NO SE RESPONSABILIZA POR PERDIDA, ROBO Y RETENCIÓN POR PARTE DE LA SUNAT LAS MERCADERIAS SIN GUÍA!', 74, 199, { align: "center" });
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
+  
+  // Línea 3: Agradecimiento (Y = 199) - Va al final
   doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
 // --- GENERAR VISOR O BOTONES SEGÚN EL DISPOSITIVO ---
