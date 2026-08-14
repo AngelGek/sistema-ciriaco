@@ -897,6 +897,7 @@ function imprimirConstanciaPDF(c) {
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(107, 103, 95); 
+  doc.text('¡OJO: LA EMPRESA NO SE RESPONSABILIZA POR PERDIDA, ROBO Y RETENCIÓN POR PARTE DE LA SUNAT LAS MERCADERIAS SIN GUÍA!', 74, 199, { align: "center" });
   doc.text('Toda transferencia bancaria se realiza a nombre de TRANSPORTES CIRIACO EXPRESS S.A.', 74, 195, { align: "center" });
   doc.text('¡Gracias por su preferencia!', 74, 199, { align: "center" });
 
@@ -937,15 +938,38 @@ function imprimirConstanciaPDF(c) {
       el('div', { class: 'modal-actions', style: 'display:flex; flex-direction:column; gap:10px; margin-top:5px;' }, [btnCompartir, btnDescargar, btnCerrar])
     ]);
 
-  } else {
-    // 💻 VISTA PC: Muestra el visor de PDF clásico y el botón de Imprimir
+ } else {
+    // 💻 VISTA PC: Muestra el visor de PDF clásico, botón Imprimir y botón Compartir
     const pdfBlobUrl = doc.output('bloburl');
     const iframe = el('iframe', { src: pdfBlobUrl, style: 'width:100%; height:450px; border:1px solid var(--line); border-radius:8px;' });
     
     const btnImprimir = el('button', { 
       class: 'btn btn-primary', 
       onclick: () => iframe.contentWindow.print() 
-    }, '🖨️ Imprimir Constancia');
+    }, '🖨️ Imprimir');
+
+    // Botón de WhatsApp para PC
+    const btnCompartir = el('button', { 
+      class: 'btn',
+      style: 'background: #25D366; color: white; border: none;',
+      onclick: async () => {
+        try {
+          const pdfBlob = doc.output('blob');
+          const file = new File([pdfBlob], nombreArchivo, { type: 'application/pdf' });
+          
+          // Intenta usar el compartidor nativo (Edge/Chrome moderno)
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: nombreArchivo });
+          } else {
+            // Si el navegador de PC no lo soporta, descarga y avisa
+            doc.save(nombreArchivo); 
+            alert("El PDF se ha descargado. Puedes arrastrarlo directamente a WhatsApp Web para enviarlo.");
+          }
+        } catch(e) {
+          console.error("Acción cancelada", e);
+        }
+      } 
+    }, '📲 WhatsApp');
 
     const btnCerrar = el('button', { 
       class: 'btn btn-outline', 
@@ -954,9 +978,13 @@ function imprimirConstanciaPDF(c) {
 
     openModal([
       el('h3', {}, `Constancia N° ${String(c.numero).padStart(4, '0')}`),
-      el('p', { class: 'modal-sub' }, 'Vista previa del documento listo para imprimir:'),
+      el('p', { class: 'modal-sub' }, 'Vista previa del documento listo para imprimir o enviar:'),
       iframe,
-      el('div', { class: 'modal-actions', style: 'margin-top:14px;' }, [btnCerrar, btnImprimir])
+      el('div', { class: 'modal-actions', style: 'margin-top:14px; display:flex; justify-content:flex-end; gap:8px;' }, [
+        btnCerrar, 
+        btnCompartir,
+        btnImprimir
+      ])
     ]);
   }
 }
